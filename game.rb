@@ -22,15 +22,19 @@ module Display
     def display_turns(name)
         "It's #{name}'s move"
     end
+
+    def display_winner(winner)
+      "#{winner} wins the game!"
+    end
   end
 # Baord class for creating a board and manupulating the cells
 class Board 
     attr_reader :cells
   
     WINNIG_COMPOSITION = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], [8, 5, 2], 
-      [7, 4, 1], [6, 3, 0], [2, 4, 5], [8, 4, 0]
-      ]
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+    [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
+  ].freeze
   
     def initialize
       @cells = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -56,7 +60,7 @@ class Board
     end
 
     def full?
-        cells.all?{|integer| integer == "X" || integer == "O"}
+        cells.all?{|integer| integer =~ /[^0-9]/}
     end  
 
     def game_over?
@@ -76,10 +80,11 @@ end
 
 class Game
     include Display
-    attr_accessor :first_palyer, :second_player, :symbol, :board
+    attr_accessor :first_palyer, :second_player, :symbol, :board, :current_player
     def initialize
         @first_palyer = nil
         @second_player = nil
+        @current_player = nil
         @symbol = nil
         @board = Board.new
     end
@@ -100,21 +105,46 @@ class Game
         @board.show
     end
 
+    def current_pl(player)
+      @current_player = player
+    end
+
+    def switch_players
+      if @current_player = @first_palyer
+        @current_player = @second_player
+      else  
+        @current_player = @first_palyer
+      end
+    end
+
+    def show_winner
+
+
+    end
+
     def play
-         puts display_turns(first_palyer.name)
-         number = gets.chomp.to_i
-         board.update_cell(number, first_palyer.symbol)
-         board.show
-         puts display_turns(second_player.name)
-         number2 = gets.chomp.to_i
-         board.update_cell(number2, second_player.symbol)
-         board.show
+        current_pl(@first_palyer)
+        puts display_turns(current_player.name)
+        number = gets.chomp.to_i
+        board.update_cell(number, current_player.symbol)
+        board.show
+        self.switch_players
+        puts display_turns(current_player.name)
+        number2 = gets.chomp.to_i
+        board.update_cell(number2, current_player.symbol)
+        board.show
+        self.conclusion     
     end
 
     def conclusion
-        
-        
-    end
+      if board.game_over?
+      puts display_winner(current_player.name)
+      elsif board.full?
+       puts "No one win, it is tie"
+      else
+       self.play
+      end
+  end
         
 
 end
@@ -123,3 +153,4 @@ test_game = Game.new
 
 test_game.game_setter
 test_game.play
+
